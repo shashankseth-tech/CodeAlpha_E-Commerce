@@ -1,0 +1,30 @@
+# Node.js Dependencies
+node_modules/
+
+# Environment Variables & Secrets
+.env
+.env.local
+
+# Database files & journals
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Backup directories & archives
+_backup_*/
+*.bak
+*.zip
+*.tar.gz
+
+# Logs & Debugging
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
