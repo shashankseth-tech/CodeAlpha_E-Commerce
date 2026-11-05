@@ -10,135 +10,12 @@
   <!-- High-Energy Neo-Brutalist & Modern Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Core Stylesheet -->
   <link rel="stylesheet" href="styles/main.css">
 </head>
 <body class="brutalist-theme">
-
-  <!-- ======================================================== -->
-  <!-- DEDICATED FULL-SCREEN AUTHENTICATION (LOGIN & REGISTER)   -->
-  <!-- ======================================================== -->
-  <div id="auth-fullscreen-view" class="auth-fullscreen-screen hidden" role="region" aria-label="User Authentication Screen">
-    <!-- Top Minimal Navigation -->
-    <header class="auth-fullscreen-header">
-      <div class="auth-fs-brand">
-        <a href="javascript:void(0)" onclick="auth.closeFullscreenAuth()" class="brand-logo auth-fs-logo" aria-label="Return to Storefront">
-          <div class="logo-box">
-            <span class="logo-box-glyph">▲</span>
-          </div>
-          <div class="logo-text">
-            <span class="logo-title">ALPHA<span class="logo-slash">//</span>STORE</span>
-            <span class="logo-tag">AUTHENTICATION PORTAL</span>
-          </div>
-        </a>
-      </div>
-      <div class="auth-fs-actions">
-        <button type="button" class="btn btn-brutalist btn-white btn-sm" onclick="auth.closeFullscreenAuth()">
-          ← BACK TO STORE
-        </button>
-      </div>
-    </header>
-
-    <!-- Centered Full-Screen Viewport Content -->
-    <div class="auth-fullscreen-body">
-      <!-- 1. LOGIN SCREEN -->
-      <div id="auth-screen-login" class="auth-fullscreen-card brutalist-box">
-        <div class="auth-card-topbar">
-          <span class="brutalist-tag tag-neon">AUTHENTICATION // PORTAL</span>
-          <span class="auth-security-tag">🔒 256-BIT ENCRYPTED</span>
-        </div>
-
-        <div class="auth-card-header">
-          <h2>SIGN IN TO ALPHA STORE</h2>
-          <p>Access your hardware telemetry, order tracking, and personal profile.</p>
-        </div>
-
-        <!-- Quick Demo Profiles Helper -->
-        <div class="demo-profiles-strip">
-          <span class="demo-strip-label">⚡ QUICK ONE-CLICK DEMO ACCESS:</span>
-          <div class="demo-strip-buttons">
-            <button type="button" class="btn-demo-pill" id="fs-demo-user-btn">👤 CUSTOMER DEMO</button>
-            <button type="button" class="btn-demo-pill" id="fs-demo-admin-btn">⚙️ ADMIN DEMO</button>
-          </div>
-        </div>
-
-        <div id="fs-login-error" class="auth-feedback-box error hidden"></div>
-        <div id="fs-login-success" class="auth-feedback-box success hidden"></div>
-
-        <form id="fs-login-form" class="auth-fullscreen-form">
-          <div class="form-group">
-            <label for="fs-login-email">EMAIL ADDRESS *</label>
-            <input type="email" id="fs-login-email" class="form-control brutalist-input" required placeholder="alex@alphastore.io" autocomplete="email">
-          </div>
-
-          <div class="form-group">
-            <div class="label-with-action">
-              <label for="fs-login-password">PASSWORD *</label>
-              <a href="javascript:void(0)" class="auth-sublink" id="fs-forgot-pw-link">Forgot Password?</a>
-            </div>
-            <input type="password" id="fs-login-password" class="form-control brutalist-input" required placeholder="••••••••" autocomplete="current-password">
-          </div>
-
-          <button type="submit" id="fs-login-submit-btn" class="btn btn-brutalist btn-lime btn-block btn-lg" style="margin-top: 1.25rem;">
-            SIGN IN TO ACCOUNT →
-          </button>
-        </form>
-
-        <div class="auth-card-footer">
-          <p>Don't have an account yet? <button type="button" class="auth-text-btn" onclick="auth.showFullscreenRegister()">Create an Account</button></p>
-          <a href="javascript:void(0)" onclick="auth.closeFullscreenAuth()" class="auth-back-subtle">← Return to Storefront Catalog</a>
-        </div>
-      </div>
-
-      <!-- 2. REGISTRATION SCREEN -->
-      <div id="auth-screen-register" class="auth-fullscreen-card brutalist-box hidden">
-        <div class="auth-card-topbar">
-          <span class="brutalist-tag tag-purple">REGISTRATION // NEW_CUSTOMER</span>
-          <span class="auth-security-tag">⚡ INSTANT ACTIVATION</span>
-        </div>
-
-        <div class="auth-card-header">
-          <h2>CREATE NEW ACCOUNT</h2>
-          <p>Register to unlock real-time tracking, saved wishlists, and express courier dispatch.</p>
-        </div>
-
-        <div id="fs-register-error" class="auth-feedback-box error hidden"></div>
-        <div id="fs-register-success" class="auth-feedback-box success hidden"></div>
-
-        <form id="fs-register-form" class="auth-fullscreen-form">
-          <div class="form-group">
-            <label for="fs-reg-name">FULL NAME *</label>
-            <input type="text" id="fs-reg-name" class="form-control brutalist-input" required placeholder="Alex Morgan" autocomplete="name">
-          </div>
-
-          <div class="form-group">
-            <label for="fs-reg-email">EMAIL ADDRESS *</label>
-            <input type="email" id="fs-reg-email" class="form-control brutalist-input" required placeholder="alex@alphastore.io" autocomplete="email">
-          </div>
-
-          <div class="form-group">
-            <label for="fs-reg-password">PASSWORD *</label>
-            <input type="password" id="fs-reg-password" class="form-control brutalist-input" required minlength="6" placeholder="At least 6 characters" autocomplete="new-password">
-            <small class="form-hint">Must contain at least 6 characters.</small>
-          </div>
-
-          <button type="submit" id="fs-reg-submit-btn" class="btn btn-brutalist btn-lime btn-block btn-lg" style="margin-top: 1.25rem;">
-            CREATE ACCOUNT & ENTER →
-          </button>
-        </form>
-
-        <div class="auth-card-footer">
-          <p>Already have an account? <button type="button" class="auth-text-btn" onclick="auth.showFullscreenLogin()">Sign In</button></p>
-          <a href="javascript:void(0)" onclick="auth.closeFullscreenAuth()" class="auth-back-subtle">← Return to Storefront Catalog</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Storefront Main Wrapper (hidden when full-screen auth is active) -->
-  <div id="storefront-app">
 
   <!-- High-Impact Neo-Brutalist Marquee Ticker -->
   <div class="brutalist-marquee-wrap" id="announcement-bar">
@@ -163,6 +40,8 @@
       </div>
     </div>
   </div>
+
+
 
   <!-- Header / Navigation Bar -->
   <header class="site-header" id="site-header">
@@ -201,17 +80,6 @@
 
       <!-- Header Action Controls -->
       <div class="header-actions">
-        <!-- Wishlist Button -->
-        <button type="button" class="header-action-btn brutalist-btn-sm" id="wishlist-nav-btn" title="View Wishlist" aria-label="Saved Wishlist">
-          <div class="cart-icon-wrapper">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-            </svg>
-            <span class="cart-badge" id="wishlist-badge" style="display: none;">0</span>
-          </div>
-          <span class="btn-label-desktop">SAVED</span>
-        </button>
-
         <!-- Order History Tracking Button -->
         <button type="button" class="header-action-btn brutalist-btn-sm" id="orders-nav-btn" title="Track & View Orders" aria-label="Order Tracking">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -222,15 +90,15 @@
           <span class="btn-label-desktop">ORDERS</span>
         </button>
 
-        <!-- Admin Command Center Button (Visible only to Admin) -->
-        <button type="button" class="header-action-btn brutalist-btn-sm btn-admin-header hidden" id="admin-nav-btn" title="Admin Command Center" aria-label="Admin Dashboard">
+        <!-- Admin Console Trigger Button (Visible only to Admin) -->
+        <button type="button" class="header-action-btn brutalist-btn-sm admin-nav-btn hidden" id="admin-nav-btn" title="Open Admin Console" aria-label="Admin Console">
+          <span class="admin-pulse-dot"></span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <rect x="3" y="3" width="7" height="9"></rect>
-            <rect x="14" y="3" width="7" height="5"></rect>
-            <rect x="14" y="12" width="7" height="9"></rect>
-            <rect x="3" y="16" width="7" height="5"></rect>
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
           </svg>
-          <span class="btn-label-desktop">ADMIN</span>
+          <span class="btn-label-desktop">⚡ ADMIN PANEL</span>
         </button>
 
         <!-- User Authentication / Menu -->
@@ -254,21 +122,13 @@
               <span id="user-profile-role" class="brutalist-tag tag-neon">CUSTOMER</span>
             </div>
             <div class="user-dropdown-links">
-              <button type="button" class="dropdown-link-btn" id="user-menu-profile-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                <span>MY PROFILE & SETTINGS</span>
-              </button>
-              <button type="button" class="dropdown-link-btn" id="user-menu-wishlist-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-                <span>SAVED WISHLIST</span>
+              <button type="button" class="dropdown-link-btn admin-dropdown-link hidden" id="user-menu-admin-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>⚡ ADMIN DASHBOARD</span>
               </button>
               <button type="button" class="dropdown-link-btn" id="user-menu-orders-link">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 <span>MY ORDERS & TRACKING</span>
-              </button>
-              <button type="button" class="dropdown-link-btn text-warning hidden" id="user-menu-admin-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
-                <span>ADMIN DASHBOARD</span>
               </button>
               <button type="button" class="dropdown-link-btn text-danger" id="logout-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
@@ -470,6 +330,8 @@
     </div>
   </div>
 
+
+
   <!-- ======================================================== -->
   <!-- SLIDE-OVER DRAWER: SHOPPING CART                         -->
   <!-- ======================================================== -->
@@ -634,7 +496,7 @@
           <div class="checkout-section brutalist-box">
             <h3 class="checkout-section-title">
               <span class="step-badge">3</span>
-              <span>PAYMENT PREFERENCES</span>
+              <span>PAYMENT GATEWAY</span>
             </h3>
             <div class="payment-options-grid">
               <label class="payment-option-card brutalist-radio-card">
@@ -733,6 +595,8 @@
     </div>
   </div>
 
+
+
   <!-- ======================================================== -->
   <!-- MODAL 3: ORDER CONFIRMATION & RECEIPT                   -->
   <!-- ======================================================== -->
@@ -748,6 +612,8 @@
       </div>
     </div>
   </div>
+
+
 
   <!-- ======================================================== -->
   <!-- MODAL 4: ORDER HISTORY & LIVE TRACKING MODAL            -->
@@ -770,6 +636,8 @@
       </div>
     </div>
   </div>
+
+
 
   <!-- ======================================================== -->
   <!-- MODAL 5: USER AUTHENTICATION (LOGIN & REGISTRATION)     -->
@@ -832,486 +700,151 @@
     </div>
   </div>
 
-  <!-- ======================================================== -->
-  <!-- MODAL 6: USER PROFILE & SETTINGS                         -->
-  <!-- ======================================================== -->
-  <div class="modal" id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
-    <div class="modal-backdrop modal-backdrop-dismiss"></div>
-    <div class="modal-dialog modal-md brutalist-modal">
-      <div class="modal-top-bar">
-        <span class="modal-window-title">USER_PROFILE // ARCHIVE_SETTINGS</span>
-        <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-header">
-        <h2 id="profile-modal-title">👤 ACCOUNT PROFILE</h2>
-        <p class="modal-subtitle">Manage your personal coordinates and security credentials.</p>
-      </div>
-      <div class="modal-body">
-        <div class="profile-hero-card brutalist-subpanel">
-          <div class="profile-avatar-wrap">
-            <img id="profile-card-avatar" src="" alt="Avatar" class="profile-card-avatar">
-          </div>
-          <div class="profile-meta">
-            <h3 id="profile-card-name">Alex Morgan</h3>
-            <p id="profile-card-email">alex@alphastore.io</p>
-            <span id="profile-card-badge" class="brutalist-tag tag-neon">CUSTOMER</span>
-          </div>
-        </div>
 
-        <!-- Tab selection for profile -->
-        <div class="auth-tabs-header brutalist-tabs" style="margin-top: 1.5rem;">
-          <button type="button" class="auth-tab-btn active" id="tab-profile-info">PROFILE INFO</button>
-          <button type="button" class="auth-tab-btn" id="tab-profile-security">SECURITY</button>
-        </div>
 
-        <!-- Info Form -->
-        <form id="form-update-profile" class="profile-subform" style="margin-top: 1rem;">
-          <div class="form-group">
-            <label for="profile-input-name">FULL NAME</label>
-            <input type="text" id="profile-input-name" class="form-control brutalist-input" required>
-          </div>
-          <div class="form-group">
-            <label for="profile-input-phone">PHONE NUMBER</label>
-            <input type="tel" id="profile-input-phone" class="form-control brutalist-input" placeholder="+1 (555) 000-0000">
-          </div>
-          <button type="submit" class="btn btn-brutalist btn-lime btn-block">SAVE PROFILE CHANGES</button>
-        </form>
 
-        <!-- Security Form -->
-        <form id="form-update-password" class="profile-subform hidden" style="margin-top: 1rem;">
-          <div class="form-group">
-            <label for="profile-current-password">CURRENT PASSWORD</label>
-            <input type="password" id="profile-current-password" class="form-control brutalist-input" required placeholder="••••••••">
-          </div>
-          <div class="form-group">
-            <label for="profile-new-password">NEW PASSWORD (MIN 6 CHARS)</label>
-            <input type="password" id="profile-new-password" class="form-control brutalist-input" required minlength="6" placeholder="••••••••">
-          </div>
-          <button type="submit" class="btn btn-brutalist btn-lime btn-block">UPDATE SECURITY PASSWORD</button>
-        </form>
-      </div>
-    </div>
-  </div>
 
   <!-- ======================================================== -->
-  <!-- MODAL 7: SAVED WISHLIST                                  -->
-  <!-- ======================================================== -->
-  <div class="modal" id="wishlist-modal" role="dialog" aria-modal="true" aria-labelledby="wishlist-modal-title">
-    <div class="modal-backdrop modal-backdrop-dismiss"></div>
-    <div class="modal-dialog modal-lg brutalist-modal">
-      <div class="modal-top-bar">
-        <span class="modal-window-title">HARDWARE_VAULT // WISHLIST.SYS</span>
-        <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-header">
-        <h2 id="wishlist-modal-title">⭐ SAVED HARDWARE VAULT</h2>
-        <p class="modal-subtitle">Your earmarked items ready for deployment.</p>
-      </div>
-      <div class="modal-body">
-        <div id="wishlist-items-stream" class="wishlist-stream">
-          <!-- Filled dynamically by app.renderWishlistModal() -->
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- MODAL 8: INDIVIDUAL ORDER DETAILS & INVOICE             -->
-  <!-- ======================================================== -->
-  <div class="modal" id="order-detail-modal" role="dialog" aria-modal="true" aria-labelledby="order-detail-title">
-    <div class="modal-backdrop modal-backdrop-dismiss"></div>
-    <div class="modal-dialog modal-lg brutalist-modal">
-      <div class="modal-top-bar">
-        <span class="modal-window-title">DISPATCH_TELEMETRY // INVOICE_VIEW</span>
-        <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-body" id="order-detail-content">
-        <!-- Rendered by app.showOrderDetail(orderNumber) -->
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- MODAL 9: ABOUT US MANIFESTO                              -->
-  <!-- ======================================================== -->
-  <div class="modal" id="about-modal" role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
-    <div class="modal-backdrop modal-backdrop-dismiss"></div>
-    <div class="modal-dialog modal-md brutalist-modal">
-      <div class="modal-top-bar">
-        <span class="modal-window-title">SYSTEM_MANIFESTO // ABOUT_US</span>
-        <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-header">
-        <h2 id="about-modal-title">⚡ ABOUT ALPHA STORE</h2>
-        <p class="modal-subtitle">Zero bloatware. High-tolerance engineering. Uncompromised gear.</p>
-      </div>
-      <div class="modal-body about-body-text">
-        <div class="brutalist-box about-highlight-box">
-          <h3>RAW PERFORMANCE HARDWARE</h3>
-          <p>
-            Founded in 2026, <strong>ALPHA STORE</strong> was conceived as a rebellion against planned obsolescence, fragile plastics, and sluggish software wrappers.
-          </p>
-          <p>
-            Every audio driver, microcontroller, mechanical keyboard chassis, and cinema gimbal in our archive undergoes rigorous endurance benchmarking. We select aerospace-grade titanium, custom-machined aluminum, graphene acoustic drivers, and hot-swappable switches to ensure your setup withstands decades of intense creative production.
-          </p>
-        </div>
-
-        <div class="about-pillars-grid" style="margin-top: 1.5rem;">
-          <div class="pillar-mini-card">
-            <strong>✦ 2-YEAR WARRANTY</strong>
-            <p>Direct replacement with zero restocking friction.</p>
-          </div>
-          <div class="pillar-mini-card">
-            <strong>✦ 30-DAY LAB TRIALS</strong>
-            <p>Benchmark in your studio. Complete refund if not satisfied.</p>
-          </div>
-          <div class="pillar-mini-card">
-            <strong>✦ 48-HR DISPATCH</strong>
-            <p>Tracked carbon-neutral air freight to 45+ countries.</p>
-          </div>
-        </div>
-
-        <button type="button" class="btn btn-brutalist btn-lime btn-block" style="margin-top: 1.5rem;" onclick="app.closeModal('about-modal')">
-          EXPLORE THE CATALOG →
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- MODAL 10: CONTACT US & INQUIRIES                         -->
-  <!-- ======================================================== -->
-  <div class="modal" id="contact-modal" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
-    <div class="modal-backdrop modal-backdrop-dismiss"></div>
-    <div class="modal-dialog modal-md brutalist-modal">
-      <div class="modal-top-bar">
-        <span class="modal-window-title">TECHNICAL_ESCALATION // CONTACT.LOG</span>
-        <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-header">
-        <h2 id="contact-modal-title">🛰️ DIRECT SUPPORT & INQUIRIES</h2>
-        <p class="modal-subtitle">Zero chatbots. Direct escalation to our hardware engineering team.</p>
-      </div>
-      <div class="modal-body">
-        <div class="contact-info-strip brutalist-subpanel">
-          <div><strong>SLA:</strong> &lt; 24h Response</div>
-          <div><strong>DIRECT EMAIL:</strong> support@alphastore.io</div>
-          <div><strong>OPERATIONS:</strong> Global Dispatch HQ</div>
-        </div>
-
-        <form id="contact-form" style="margin-top: 1.5rem;">
-          <div class="form-group">
-            <label for="contact-name">FULL NAME *</label>
-            <input type="text" id="contact-name" class="form-control brutalist-input" required placeholder="Alex Morgan">
-          </div>
-          <div class="form-group">
-            <label for="contact-email">EMAIL ADDRESS *</label>
-            <input type="email" id="contact-email" class="form-control brutalist-input" required placeholder="alex@alphastore.io">
-          </div>
-          <div class="form-group">
-            <label for="contact-subject">SUBJECT / HARDWARE ID *</label>
-            <input type="text" id="contact-subject" class="form-control brutalist-input" required placeholder="Technical inquiry regarding Apex Pro">
-          </div>
-          <div class="form-group">
-            <label for="contact-message">YOUR MESSAGE *</label>
-            <textarea id="contact-message" class="form-control brutalist-input" rows="4" required placeholder="Describe your question, request, or setup requirement..."></textarea>
-          </div>
-          <button type="submit" id="contact-submit-btn" class="btn btn-brutalist btn-lime btn-block">DISPATCH INQUIRY MESSAGE</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- MODAL 11: FAQ (FREQUENTLY ASKED QUESTIONS)              -->
-  <!-- ======================================================== -->
-  <div class="modal" id="faq-modal" role="dialog" aria-modal="true" aria-labelledby="faq-modal-title">
-    <div class="modal-backdrop modal-backdrop-dismiss"></div>
-    <div class="modal-dialog modal-md brutalist-modal">
-      <div class="modal-top-bar">
-        <span class="modal-window-title">DOCUMENTATION // FAQ.EXE</span>
-        <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-header">
-        <h2 id="faq-modal-title">❓ FREQUENTLY ASKED QUESTIONS</h2>
-        <p class="modal-subtitle">Quick answers to shipping, warranty, returns, and payments.</p>
-      </div>
-      <div class="modal-body faq-accordion-container">
-        <div class="faq-card">
-          <h4>📦 What is your dispatch and delivery timeframe?</h4>
-          <p>Orders are packaged and dispatched from our logistics hub within 24 to 48 hours. Standard courier shipping arrives in 2–4 business days with end-to-end tracking.</p>
-        </div>
-        <div class="faq-card">
-          <h4>🛡️ How does the 2-Year Hardware Warranty work?</h4>
-          <p>Every purchase includes a no-hassle 2-year warranty covering acoustic driver failures, battery degradation below 80%, PCB errors, and manufacturing defects. We issue an instant pre-paid replacement.</p>
-        </div>
-        <div class="faq-card">
-          <h4>🔄 What is the 30-Day Zero Questions Return Policy?</h4>
-          <p>Try any device in your setup for up to 30 days. If it doesn’t suit your workflow, initiate a return from the Orders page or email support. You will receive a 100% refund with zero restocking penalties.</p>
-        </div>
-        <div class="faq-card">
-          <h4>💳 What payment options are supported?</h4>
-          <p>We accept Credit & Debit Cards (Visa, MasterCard, American Express), PayPal Express, and Cash on Delivery (COD) upon courier arrival.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- MODAL 12: POLICIES (TERMS, PRIVACY & REFUND)            -->
-  <!-- ======================================================== -->
-  <div class="modal" id="policy-modal" role="dialog" aria-modal="true" aria-labelledby="policy-modal-title">
-    <div class="modal-backdrop modal-backdrop-dismiss"></div>
-    <div class="modal-dialog modal-lg brutalist-modal">
-      <div class="modal-top-bar">
-        <span class="modal-window-title">LEGAL // STORE_POLICIES</span>
-        <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="auth-tabs-header brutalist-tabs">
-        <button type="button" class="auth-tab-btn active" id="tab-policy-terms">TERMS OF SERVICE</button>
-        <button type="button" class="auth-tab-btn" id="tab-policy-privacy">PRIVACY POLICY</button>
-        <button type="button" class="auth-tab-btn" id="tab-policy-returns">RETURNS & REFUND</button>
-      </div>
-      <div class="modal-body">
-        <div id="policy-content-terms" class="policy-article">
-          <h3>TERMS OF SERVICE</h3>
-          <p>By browsing ALPHA // STORE or placing an order, you agree to these operational terms. All products are authentic and backed by manufacturer specifications. Prices are in USD and include applicable baseline charges.</p>
-          <p>Orders are verified for stock prior to debit. In the rare event of an inventory conflict, an immediate notification and automated refund will be initiated.</p>
-        </div>
-        <div id="policy-content-privacy" class="policy-article hidden">
-          <h3>PRIVACY POLICY</h3>
-          <p>We respect customer privacy and data sovereignty. Passwords are encrypted with industry-standard bcrypt hashing. Tokens use signed JSON Web Tokens (JWT). We never sell or distribute email addresses or telemetry records to third-party ad brokers.</p>
-        </div>
-        <div id="policy-content-returns" class="policy-article hidden">
-          <h3>RETURN & REFUND POLICY</h3>
-          <p>Customers may return undamaged hardware within 30 calendar days of delivery. Pre-paid shipping labels are provided upon request. Refunds are processed back to the original funding source within 3 business days of courier scan.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- MODAL 13: COMPREHENSIVE ADMIN COMMAND CENTER            -->
+  <!-- MODAL 6: ADMIN CONSOLE & STORE MANAGEMENT                -->
   <!-- ======================================================== -->
   <div class="modal" id="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
     <div class="modal-backdrop modal-backdrop-dismiss"></div>
     <div class="modal-dialog modal-xl brutalist-modal">
       <div class="modal-top-bar">
-        <span class="modal-window-title">ROOT_COMMAND_CENTER // ADMIN_LEVEL_ACCESS</span>
-        <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
+        <span class="modal-window-title">ADMIN_CORE_CONSOLE // CONTROL_PLANE.EXE</span>
+        <button type="button" class="modal-close-btn" aria-label="Close admin modal">&times;</button>
       </div>
       <div class="modal-header admin-modal-header">
         <div>
-          <h2 id="admin-modal-title">⚙️ ADMIN COMMAND CENTER</h2>
-          <p class="modal-subtitle">Live store telemetry, inventory control, and customer order management.</p>
+          <h2 id="admin-modal-title">⚡ STORE MANAGEMENT CONSOLE</h2>
+          <p class="modal-subtitle">Live analytics, order fulfillment controls, and inventory orchestration.</p>
         </div>
         <div class="admin-header-badge">
-          <span class="brutalist-tag tag-neon">ADMIN VERIFIED</span>
+          <span class="badge badge-admin">AUTHENTICATED ROOT</span>
+        </div>
+      </div>
+
+      <!-- Quick Store Overview Analytics -->
+      <div class="admin-stats-bar" id="admin-stats-container">
+        <div class="admin-stat-card brutalist-box">
+          <span class="stat-card-label">TOTAL STORE REVENUE</span>
+          <strong class="stat-card-val text-lime" id="stat-revenue">$0.00</strong>
+          <small class="stat-card-sub">Accumulated paid dispatches</small>
+        </div>
+        <div class="admin-stat-card brutalist-box">
+          <span class="stat-card-label">TOTAL ORDERS</span>
+          <strong class="stat-card-val text-cyan" id="stat-orders">0</strong>
+          <small class="stat-card-sub">Customer purchases</small>
+        </div>
+        <div class="admin-stat-card brutalist-box">
+          <span class="stat-card-label">CATALOG PRODUCTS</span>
+          <strong class="stat-card-val text-yellow" id="stat-products">0</strong>
+          <small class="stat-card-sub">Active SKUs listed</small>
+        </div>
+        <div class="admin-stat-card brutalist-box">
+          <span class="stat-card-label">REGISTERED USERS</span>
+          <strong class="stat-card-val text-white" id="stat-users">0</strong>
+          <small class="stat-card-sub">Active consumer accounts</small>
         </div>
       </div>
 
       <!-- Admin Navigation Tabs -->
-      <div class="admin-tabs-bar brutalist-tabs">
-        <button type="button" class="admin-tab-btn active" id="adm-tab-overview">OVERVIEW & METRICS</button>
-        <button type="button" class="admin-tab-btn" id="adm-tab-products">PRODUCT MANAGEMENT</button>
-        <button type="button" class="admin-tab-btn" id="adm-tab-categories">CATEGORIES</button>
-        <button type="button" class="admin-tab-btn" id="adm-tab-orders">CUSTOMER ORDERS</button>
-        <button type="button" class="admin-tab-btn" id="adm-tab-coupons">COUPONS</button>
-        <button type="button" class="admin-tab-btn" id="adm-tab-customers">CUSTOMERS</button>
+      <div class="admin-tab-nav">
+        <button type="button" class="admin-tab-btn active" id="admin-tab-btn-orders" onclick="window.app.switchAdminTab('orders')">
+          📦 ALL ORDERS (<span id="admin-orders-count-badge">0</span>)
+        </button>
+        <button type="button" class="admin-tab-btn" id="admin-tab-btn-inventory" onclick="window.app.switchAdminTab('inventory')">
+          🏷️ INVENTORY & PRODUCTS (<span id="admin-products-count-badge">0</span>)
+        </button>
+        <button type="button" class="admin-tab-btn" id="admin-tab-btn-add-product" onclick="window.app.switchAdminTab('add-product')">
+          ➕ ADD NEW PRODUCT
+        </button>
       </div>
 
       <div class="modal-body admin-modal-body">
-        <!-- TAB 1: Overview -->
-        <div id="adm-panel-overview" class="admin-panel-content">
-          <!-- KPI Metrics Row -->
-          <div class="admin-kpi-grid">
-            <div class="admin-kpi-card">
-              <span class="kpi-label">GROSS REVENUE</span>
-              <strong class="kpi-value" id="adm-kpi-revenue">$0.00</strong>
-              <small class="kpi-sub">Verified orders sum</small>
+        <!-- Tab 1: Orders Fulfillment Tab -->
+        <div class="admin-tab-panel active" id="admin-panel-orders">
+          <div class="admin-toolbar">
+            <div class="admin-filter-pills" id="admin-order-filters">
+              <button type="button" class="admin-pill-btn active" onclick="window.app.filterAdminOrders('All', this)">ALL</button>
+              <button type="button" class="admin-pill-btn" onclick="window.app.filterAdminOrders('Processing', this)">PROCESSING</button>
+              <button type="button" class="admin-pill-btn" onclick="window.app.filterAdminOrders('Shipped', this)">SHIPPED</button>
+              <button type="button" class="admin-pill-btn" onclick="window.app.filterAdminOrders('Delivered', this)">DELIVERED</button>
+              <button type="button" class="admin-pill-btn" onclick="window.app.filterAdminOrders('Cancelled', this)">CANCELLED</button>
             </div>
-            <div class="admin-kpi-card">
-              <span class="kpi-label">TOTAL ORDERS</span>
-              <strong class="kpi-value" id="adm-kpi-orders">0</strong>
-              <small class="kpi-sub">Lifetime orders</small>
-            </div>
-            <div class="admin-kpi-card">
-              <span class="kpi-label">TOTAL PRODUCTS</span>
-              <strong class="kpi-value" id="adm-kpi-products">0</strong>
-              <small class="kpi-sub">Catalog inventory</small>
-            </div>
-            <div class="admin-kpi-card">
-              <span class="kpi-label">CUSTOMERS</span>
-              <strong class="kpi-value" id="adm-kpi-customers">0</strong>
-              <small class="kpi-sub">Registered accounts</small>
-            </div>
-          </div>
-
-          <!-- Low stock alert box -->
-          <div class="admin-sub-section" style="margin-top: 1.5rem;">
-            <h3>⚠️ LOW STOCK WARNINGS</h3>
-            <div id="adm-low-stock-list" class="admin-table-wrap">
-              <!-- Rendered by JS -->
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB 2: Products -->
-        <div id="adm-panel-products" class="admin-panel-content hidden">
-          <div class="adm-section-header">
-            <h3>CATALOG INVENTORY</h3>
-            <button type="button" class="btn btn-brutalist btn-lime btn-sm" id="adm-add-product-btn">
-              + ADD NEW PRODUCT
+            <button type="button" class="btn btn-brutalist btn-sm btn-white" onclick="window.app.loadAdminOrders()">
+              ↻ REFRESH ORDERS
             </button>
           </div>
-          <div class="admin-table-wrap" id="adm-products-table-container">
-            <!-- Rendered by JS -->
+          <div id="admin-orders-stream" class="admin-orders-stream">
+            <!-- Order cards rendered dynamically -->
           </div>
         </div>
 
-        <!-- TAB 3: Orders -->
-        <div id="adm-panel-orders" class="admin-panel-content hidden">
-          <div class="adm-section-header">
-            <h3>CUSTOMER ORDER FULFILLMENT</h3>
-            <small>Update courier dispatch status or process cancellations.</small>
+        <!-- Tab 2: Inventory & Catalog Tab -->
+        <div class="admin-tab-panel hidden" id="admin-panel-inventory">
+          <div class="admin-toolbar">
+            <input type="text" id="admin-inventory-search" class="form-control brutalist-input admin-search-input" placeholder="Search inventory by title or SKU..." oninput="window.app.filterAdminInventory(this.value)">
+            <button type="button" class="btn btn-brutalist btn-sm btn-lime" onclick="window.app.switchAdminTab('add-product')">
+              + NEW PRODUCT
+            </button>
           </div>
-          <div class="admin-table-wrap" id="adm-orders-table-container">
-            <!-- Rendered by JS -->
-          </div>
-        </div>
-
-        <!-- TAB 4: Coupons -->
-        <div id="adm-panel-coupons" class="admin-panel-content hidden">
-          <div class="adm-section-header">
-            <h3>ACTIVE PROMO CODES</h3>
-          </div>
-          <!-- Create coupon inline form -->
-          <form id="adm-coupon-form" class="admin-inline-form brutalist-box">
-            <div class="form-row-3">
-              <div class="form-group">
-                <label>COUPON CODE (e.g. FLASH25)</label>
-                <input type="text" id="adm-new-coupon-code" class="form-control brutalist-input" required placeholder="FLASH25">
-              </div>
-              <div class="form-group">
-                <label>DISCOUNT % (e.g. 25)</label>
-                <input type="number" id="adm-new-coupon-pct" class="form-control brutalist-input" min="1" max="100" required placeholder="25">
-              </div>
-              <div class="form-group">
-                <label>MIN SPEND ($)</label>
-                <input type="number" id="adm-new-coupon-min" class="form-control brutalist-input" min="0" value="0" placeholder="0">
-              </div>
-            </div>
-            <button type="submit" class="btn btn-brutalist btn-lime btn-sm">CREATE PROMO CODE</button>
-          </form>
-
-          <div class="admin-table-wrap" id="adm-coupons-table-container" style="margin-top: 1rem;">
-            <!-- Rendered by JS -->
+          <div id="admin-inventory-grid" class="admin-inventory-grid">
+            <!-- Inventory items rendered dynamically -->
           </div>
         </div>
 
-        <!-- TAB 5: Customers -->
-        <div id="adm-panel-customers" class="admin-panel-content hidden">
-          <div class="adm-section-header">
-            <h3>REGISTERED CUSTOMER DIRECTORY</h3>
-          </div>
-          <div class="admin-table-wrap" id="adm-customers-table-container">
-            <!-- Rendered by JS -->
-          </div>
-        </div>
-
-        <!-- TAB 6: Categories -->
-        <div id="adm-panel-categories" class="admin-panel-content hidden">
-          <div class="adm-section-header">
-            <h3>HARDWARE CATEGORY MANAGEMENT</h3>
-          </div>
-          <!-- Add Category Form -->
-          <form id="adm-create-category-form" class="admin-inline-form brutalist-box" style="margin-bottom: 1.25rem;">
+        <!-- Tab 3: Add New Product Tab -->
+        <div class="admin-tab-panel hidden" id="admin-panel-add-product">
+          <form id="admin-add-product-form" class="brutalist-box admin-product-form" onsubmit="window.app.handleAdminCreateProduct(event)">
+            <div id="admin-form-error" class="form-error-banner"></div>
             <div class="form-row-2">
               <div class="form-group">
-                <label for="adm-cat-name">CATEGORY NAME *</label>
-                <input type="text" id="adm-cat-name" class="form-control brutalist-input" required placeholder="e.g. Drones & Robotics">
+                <label for="admin-new-name">PRODUCT NAME *</label>
+                <input type="text" id="admin-new-name" class="form-control brutalist-input" required placeholder="e.g. Apex Hyper Tactical Keyboard">
               </div>
               <div class="form-group">
-                <label for="adm-cat-desc">DESCRIPTION</label>
-                <input type="text" id="adm-cat-desc" class="form-control brutalist-input" placeholder="Autonomous navigation systems & components">
+                <label for="admin-new-category">CATEGORY *</label>
+                <select id="admin-new-category" class="form-control brutalist-input" required>
+                  <option value="Computing">Computing</option>
+                  <option value="Audio">Audio</option>
+                  <option value="Wearables">Wearables</option>
+                  <option value="Cameras & Gear">Cameras & Gear</option>
+                  <option value="Smart Home">Smart Home</option>
+                </select>
               </div>
             </div>
-            <button type="submit" class="btn btn-brutalist btn-lime btn-sm" style="margin-top: 0.5rem;">CREATE CATEGORY</button>
+            <div class="form-row-3">
+              <div class="form-group">
+                <label for="admin-new-price">RETAIL PRICE ($) *</label>
+                <input type="number" step="0.01" min="1" id="admin-new-price" class="form-control brutalist-input" required placeholder="149.99">
+              </div>
+              <div class="form-group">
+                <label for="admin-new-orig-price">ORIGINAL / LIST PRICE ($)</label>
+                <input type="number" step="0.01" min="1" id="admin-new-orig-price" class="form-control brutalist-input" placeholder="189.99">
+              </div>
+              <div class="form-group">
+                <label for="admin-new-stock">INITIAL STOCK COUNT *</label>
+                <input type="number" min="0" id="admin-new-stock" class="form-control brutalist-input" required value="30">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="admin-new-tagline">TAGLINE / SPEC HEADLINE</label>
+              <input type="text" id="admin-new-tagline" class="form-control brutalist-input" placeholder="e.g. Wireless Tri-Mode Gasket with Pre-lubed Hot-swap Switches">
+            </div>
+            <div class="form-group">
+              <label for="admin-new-image">PRIMARY IMAGE URL *</label>
+              <input type="url" id="admin-new-image" class="form-control brutalist-input" required placeholder="https://images.unsplash.com/photo-...">
+            </div>
+            <div class="form-group">
+              <label for="admin-new-desc">DETAILED DESCRIPTION</label>
+              <textarea id="admin-new-desc" rows="3" class="form-control brutalist-input" placeholder="Describe craftsmanship, engineering tolerances, and core highlights..."></textarea>
+            </div>
+            <button type="submit" id="admin-submit-product-btn" class="btn btn-brutalist btn-lime btn-lg btn-block">
+              CONFIRM & PUBLISH PRODUCT TO STORE
+            </button>
           </form>
-
-          <div class="admin-table-wrap" id="adm-categories-table-container">
-            <!-- Rendered by JS -->
-          </div>
         </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- MODAL 14: ADMIN PRODUCT ADD / EDIT MODAL                 -->
-  <!-- ======================================================== -->
-  <div class="modal" id="product-editor-modal" role="dialog" aria-modal="true" aria-labelledby="product-editor-title">
-    <div class="modal-backdrop modal-backdrop-dismiss"></div>
-    <div class="modal-dialog modal-md brutalist-modal">
-      <div class="modal-top-bar">
-        <span class="modal-window-title">CATALOG_UPDATE // PRODUCT_EDITOR</span>
-        <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-header">
-        <h2 id="product-editor-title">PRODUCT SPECIFICATION</h2>
-      </div>
-      <div class="modal-body">
-        <form id="product-editor-form">
-          <input type="hidden" id="edit-prod-id" value="">
-          <div class="form-group">
-            <label for="edit-prod-name">PRODUCT NAME *</label>
-            <input type="text" id="edit-prod-name" class="form-control brutalist-input" required placeholder="Apex Pro Wireless Studio Headphones">
-          </div>
-          <div class="form-row-2">
-            <div class="form-group">
-              <label for="edit-prod-category">CATEGORY *</label>
-              <select id="edit-prod-category" class="form-control brutalist-input" required>
-                <option value="Audio">Audio</option>
-                <option value="Wearables">Wearables</option>
-                <option value="Computing">Computing</option>
-                <option value="Cameras & Gear">Cameras & Gear</option>
-                <option value="Smart Home">Smart Home</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="edit-prod-badge">BADGE / STICKER</label>
-              <input type="text" id="edit-prod-badge" class="form-control brutalist-input" placeholder="Best Seller">
-            </div>
-          </div>
-          <div class="form-row-3">
-            <div class="form-group">
-              <label for="edit-prod-price">PRICE ($) *</label>
-              <input type="number" id="edit-prod-price" step="0.01" min="1" class="form-control brutalist-input" required placeholder="299.99">
-            </div>
-            <div class="form-group">
-              <label for="edit-prod-original-price">ORIGINAL PRICE ($)</label>
-              <input type="number" id="edit-prod-original-price" step="0.01" min="1" class="form-control brutalist-input" placeholder="379.99">
-            </div>
-            <div class="form-group">
-              <label for="edit-prod-stock">STOCK COUNT *</label>
-              <input type="number" id="edit-prod-stock" min="0" class="form-control brutalist-input" required value="25">
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="edit-prod-tagline">TAGLINE</label>
-            <input type="text" id="edit-prod-tagline" class="form-control brutalist-input" placeholder="Lossless Spatial Audio with Active Noise Cancellation">
-          </div>
-          <div class="form-group">
-            <label for="edit-prod-image">IMAGE URL *</label>
-            <input type="url" id="edit-prod-image" class="form-control brutalist-input" required placeholder="https://images.unsplash.com/photo-...">
-          </div>
-          <div class="form-group">
-            <label for="edit-prod-desc">DESCRIPTION *</label>
-            <textarea id="edit-prod-desc" class="form-control brutalist-input" rows="3" required placeholder="Technical engineering overview..."></textarea>
-          </div>
-          <button type="submit" id="edit-prod-submit-btn" class="btn btn-brutalist btn-lime btn-block">SAVE HARDWARE SPEC</button>
-        </form>
       </div>
     </div>
   </div>
@@ -1333,13 +866,12 @@
       </div>
 
       <div class="footer-col">
-        <h4>CATALOG & VAULT</h4>
+        <h4>CATALOG</h4>
         <ul class="footer-links">
           <li><a href="#products-section">All Inventory</a></li>
           <li><a href="#hero-banner">2026 Drop</a></li>
           <li><a href="javascript:void(0)" onclick="app.openCartDrawer()">Cart Drawer</a></li>
           <li><a href="javascript:void(0)" onclick="app.openOrdersModal()">Track Order</a></li>
-          <li><a href="javascript:void(0)" onclick="app.openWishlistModal()">Saved Wishlist</a></li>
         </ul>
       </div>
 
@@ -1355,29 +887,27 @@
       </div>
 
       <div class="footer-col">
-        <h4>COMPANY & SUPPORT</h4>
-        <ul class="footer-links">
-          <li><a href="javascript:void(0)" onclick="app.openModal('about-modal')">About Alpha Store</a></li>
-          <li><a href="javascript:void(0)" onclick="app.openModal('contact-modal')">Contact Engineering</a></li>
-          <li><a href="javascript:void(0)" onclick="app.openModal('faq-modal')">Help & FAQ</a></li>
-          <li><a href="javascript:void(0)" onclick="app.openPolicyTab('returns')">Return & Refund Policy</a></li>
-          <li><a href="javascript:void(0)" onclick="app.openPolicyTab('privacy')">Privacy & Terms</a></li>
-        </ul>
+        <h4>STANDARDS</h4>
+        <p class="footer-guarantee-text">
+          ✦ 256-Bit Encrypted Payments<br>
+          ✦ Tracked Air Courier Fulfillment<br>
+          ✦ Persistent ACID SQLite Engine<br>
+          ✦ 24/7 Priority Tech Dispatch
+        </p>
       </div>
     </div>
 
     <div class="footer-bottom container">
       <p>© 2026 ALPHA STORE // HARDWARE ARCHIVE. ALL RIGHTS RESERVED.</p>
       <div class="footer-cards-icons">
-        <span class="payment-pill">VISA</span>
-        <span class="payment-pill">MASTERCARD</span>
-        <span class="payment-pill">AMEX</span>
-        <span class="payment-pill">PAYPAL</span>
-        <span class="payment-pill">COD</span>
+        <span class="card-badge">VISA</span>
+        <span class="card-badge">MASTERCARD</span>
+        <span class="card-badge">AMEX</span>
+        <span class="card-badge">PAYPAL</span>
+        <span class="card-badge">APPLE PAY</span>
       </div>
     </div>
   </footer>
-  </div><!-- /#storefront-app -->
 
   <!-- Application Scripts -->
   <script src="js/api.js"></script>

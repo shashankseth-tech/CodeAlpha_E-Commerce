@@ -94,19 +94,24 @@ const cart = {
     }
   },
 
-  async applyPromo(code) {
+  applyPromo(code) {
     const cleanCode = code.trim().toUpperCase();
-    try {
-      const res = await window.api.validateCoupon(cleanCode, this.subtotal);
-      this.promoCode = cleanCode;
-      this.discountPercent = res.discountPercent || 15;
-      localStorage.setItem('ca_promo_code', cleanCode);
-      this.calculateTotals();
-      this.render();
-      window.app?.showToast(res.message || `Coupon ${cleanCode} applied!`, 'success');
-    } catch (err) {
-      window.app?.showToast(err.message || 'Invalid promo code', 'error');
+    const validCodes = {
+      'ALPHA15': 15,
+      'ALPHA10': 10,
+      'CODEALPHA': 15,
+      'WELCOME20': 20
+    };
+
+    if (!validCodes[cleanCode]) {
+      throw new Error('Invalid promo code. Try ALPHA15 for 15% off!');
     }
+
+    this.promoCode = cleanCode;
+    localStorage.setItem('ca_promo_code', cleanCode);
+    this.calculateTotals();
+    this.render();
+    window.app?.showToast(`Coupon applied! Saved ${validCodes[cleanCode]}%`, 'success');
   },
 
   removePromo() {

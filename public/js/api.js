@@ -162,8 +162,11 @@ const api = {
     });
   },
 
-  async getOrders(email = '') {
-    const query = email ? `?email=${encodeURIComponent(email)}` : '';
+  async getOrders(email = '', status = '') {
+    const params = new URLSearchParams();
+    if (email) params.append('email', email);
+    if (status && status !== 'All') params.append('status', status);
+    const query = params.toString() ? `?${params.toString()}` : '';
     return apiRequest(`/api/orders${query}`);
   },
 
@@ -188,122 +191,23 @@ const api = {
     return apiRequest('/api/stats');
   },
 
-  // User Profile
-  async updateProfile(profileData) {
-    return apiRequest('/api/auth/profile', {
-      method: 'PUT',
-      body: JSON.stringify(profileData)
-    });
-  },
-
-  async updatePassword(passwordData) {
-    return apiRequest('/api/auth/password', {
-      method: 'PUT',
-      body: JSON.stringify(passwordData)
-    });
-  },
-
   // Admin Product Management
   async createProduct(productData) {
-    return apiRequest('/api/products', {
+    return apiRequest('/api/admin/products', {
       method: 'POST',
       body: JSON.stringify(productData)
     });
   },
 
-  async updateProduct(id, productData) {
-    return apiRequest(`/api/products/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(productData)
+  async updateProduct(productId, updates) {
+    return apiRequest(`/api/admin/products/${productId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates)
     });
   },
 
-  async deleteProduct(id) {
-    return apiRequest(`/api/products/${id}`, {
-      method: 'DELETE'
-    });
-  },
-
-  // Coupons
-  async validateCoupon(code, subtotal) {
-    return apiRequest('/api/coupons/validate', {
-      method: 'POST',
-      body: JSON.stringify({ code, subtotal })
-    });
-  },
-
-  async getAdminCoupons() {
-    return apiRequest('/api/admin/coupons');
-  },
-
-  async createCoupon(couponData) {
-    return apiRequest('/api/admin/coupons', {
-      method: 'POST',
-      body: JSON.stringify(couponData)
-    });
-  },
-
-  async deleteCoupon(id) {
-    return apiRequest(`/api/admin/coupons/${id}`, {
-      method: 'DELETE'
-    });
-  },
-
-  // Contact
-  async submitContact(contactData) {
-    return apiRequest('/api/contact', {
-      method: 'POST',
-      body: JSON.stringify(contactData)
-    });
-  },
-
-  async getAdminContacts() {
-    return apiRequest('/api/admin/contacts');
-  },
-
-  // Admin Analytics & Customers
-  async getAdminDashboard() {
-    return apiRequest('/api/admin/dashboard');
-  },
-
-  async getAdminCustomers() {
-    return apiRequest('/api/admin/customers');
-  },
-
-  // Wishlist API (Synchronized with SQLite backend)
-  async getWishlist() {
-    return apiRequest('/api/wishlist');
-  },
-
-  async toggleWishlist(productId) {
-    return apiRequest(`/api/wishlist/${productId}`, {
-      method: 'POST'
-    });
-  },
-
-  async removeWishlist(productId) {
-    return apiRequest(`/api/wishlist/${productId}`, {
-      method: 'DELETE'
-    });
-  },
-
-  // Admin Category Management
-  async adminCreateCategory(categoryData) {
-    return apiRequest('/api/admin/categories', {
-      method: 'POST',
-      body: JSON.stringify(categoryData)
-    });
-  },
-
-  async adminUpdateCategory(name, categoryData) {
-    return apiRequest(`/api/admin/categories/${encodeURIComponent(name)}`, {
-      method: 'PUT',
-      body: JSON.stringify(categoryData)
-    });
-  },
-
-  async adminDeleteCategory(name) {
-    return apiRequest(`/api/admin/categories/${encodeURIComponent(name)}`, {
+  async deleteProduct(productId) {
+    return apiRequest(`/api/admin/products/${productId}`, {
       method: 'DELETE'
     });
   }

@@ -1,4 +1,3 @@
-try { if (process.loadEnvFile) process.loadEnvFile(); } catch (e) { }
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -42,13 +41,6 @@ function requireAuth(req, res, next) {
   next();
 }
 
-function requireAdmin(req, res, next) {
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Forbidden: Administrator privileges required.' });
-  }
-  next();
-}
-
 // Attach auth token middleware globally
 app.use(authenticateToken);
 
@@ -60,82 +52,12 @@ app.use(authenticateToken);
 app.get('/api/categories', (req, res) => {
   try {
     const rows = db.prepare(`
-      SELECT c.name as category, COUNT(p.id) as count, COALESCE(c.description, '') as description
-      FROM categories c
-      LEFT JOIN products p ON p.category = c.name
-      GROUP BY c.id, c.name
-      UNION
-      SELECT category, COUNT(*) as count, '' as description
-      FROM products
-      WHERE category NOT IN (SELECT name FROM categories)
-      GROUP BY category
+      SELECT category, COUNT(*) as count 
+      FROM products 
+      GROUP BY category 
       ORDER BY count DESC
     `).all();
     res.json({ success: true, categories: rows });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// POST /api/admin/categories (Admin create category)
-app.post('/api/admin/categories', requireAuth, requireAdmin, (req, res) => {
-  try {
-    const { name, description = '' } = req.body;
-    if (!name || !name.trim()) {
-      return res.status(400).json({ success: false, message: 'Category name is required.' });
-    }
-    const cleanName = name.trim();
-    const existing = db.prepare('SELECT id FROM categories WHERE LOWER(name) = LOWER(?)').get(cleanName);
-    if (existing) {
-      return res.status(400).json({ success: false, message: `Category "${cleanName}" already exists.` });
-    }
-    db.prepare('INSERT INTO categories (name, description) VALUES (?, ?)').run(cleanName, description.trim());
-    res.status(201).json({ success: true, message: `Category "${cleanName}" created successfully.` });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// PUT /api/admin/categories/:name (Admin update category name / description)
-app.put('/api/admin/categories/:name', requireAuth, requireAdmin, (req, res) => {
-  try {
-    const oldName = decodeURIComponent(req.params.name).trim();
-    const { name: newName, description } = req.body;
-    if (!newName || !newName.trim()) {
-      return res.status(400).json({ success: false, message: 'New category name is required.' });
-    }
-    const cleanNewName = newName.trim();
-
-    db.exec('BEGIN TRANSACTION;');
-    try {
-      db.prepare('UPDATE categories SET name = ?, description = COALESCE(?, description) WHERE LOWER(name) = LOWER(?)')
-        .run(cleanNewName, description !== undefined ? description.trim() : null, oldName);
-      db.prepare('UPDATE products SET category = ? WHERE LOWER(category) = LOWER(?)')
-        .run(cleanNewName, oldName);
-      db.exec('COMMIT;');
-      res.json({ success: true, message: `Category updated from "${oldName}" to "${cleanNewName}".` });
-    } catch (inner) {
-      db.exec('ROLLBACK;');
-      throw inner;
-    }
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// DELETE /api/admin/categories/:name (Admin delete category)
-app.delete('/api/admin/categories/:name', requireAuth, requireAdmin, (req, res) => {
-  try {
-    const catName = decodeURIComponent(req.params.name).trim();
-    const prodCount = db.prepare('SELECT COUNT(*) as count FROM products WHERE LOWER(category) = LOWER(?)').get(catName).count;
-    if (prodCount > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot delete category "${catName}" because ${prodCount} product(s) belong to it. Reassign or delete them first.`
-      });
-    }
-    db.prepare('DELETE FROM categories WHERE LOWER(name) = LOWER(?)').run(catName);
-    res.json({ success: true, message: `Category "${catName}" deleted successfully.` });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -292,135 +214,6 @@ app.post('/api/products/:id/reviews', (req, res) => {
   }
 });
 
-// POST /api/products (Admin Create Product)
-app.post('/api/products', requireAuth, requireAdmin, (req, res) => {
-  try {
-    const {
-      name,
-      tagline,
-      category,
-      price,
-      original_price,
-      badge,
-      image,
-      gallery,
-      description,
-      features,
-      stock_count = 20,
-      is_featured = 0
-    } = req.body;
-
-    if (!name || !category || !price || !image || !description) {
-      return res.status(400).json({ success: false, message: 'Name, category, price, image, and description are required.' });
-    }
-
-    const galleryArr = Array.isArray(gallery) && gallery.length ? gallery : [image];
-    const featuresArr = Array.isArray(features) ? features : [];
-
-    const stmt = db.prepare(`
-      INSERT INTO products (
-        name, tagline, category, price, original_price, rating, reviews_count,
-        badge, image, gallery_json, description, features_json, stock_count, is_featured
-      ) VALUES (?, ?, ?, ?, ?, 5.0, 0, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const info = stmt.run(
-      name.trim(),
-      (tagline || '').trim(),
-      category.trim(),
-      Number(price),
-      original_price ? Number(original_price) : null,
-      (badge || '').trim(),
-      image.trim(),
-      JSON.stringify(galleryArr),
-      description.trim(),
-      JSON.stringify(featuresArr),
-      Math.max(0, parseInt(stock_count, 10) || 0),
-      is_featured ? 1 : 0
-    );
-
-    const newId = Number(info.lastInsertRowid);
-    res.status(201).json({
-      success: true,
-      message: 'Product created successfully',
-      productId: newId
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// PUT /api/products/:id (Admin Update Product)
-app.put('/api/products/:id', requireAuth, requireAdmin, (req, res) => {
-  try {
-    const productId = req.params.id;
-    const existing = db.prepare('SELECT * FROM products WHERE id = ?').get(productId);
-    if (!existing) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
-    }
-
-    const {
-      name = existing.name,
-      tagline = existing.tagline,
-      category = existing.category,
-      price = existing.price,
-      original_price = existing.original_price,
-      badge = existing.badge,
-      image = existing.image,
-      gallery,
-      description = existing.description,
-      features,
-      stock_count = existing.stock_count,
-      is_featured = existing.is_featured
-    } = req.body;
-
-    const galleryJson = gallery ? JSON.stringify(gallery) : existing.gallery_json;
-    const featuresJson = features ? JSON.stringify(features) : existing.features_json;
-
-    db.prepare(`
-      UPDATE products SET
-        name = ?, tagline = ?, category = ?, price = ?, original_price = ?,
-        badge = ?, image = ?, gallery_json = ?, description = ?, features_json = ?,
-        stock_count = ?, is_featured = ?
-      WHERE id = ?
-    `).run(
-      name.trim(),
-      (tagline || '').trim(),
-      category.trim(),
-      Number(price),
-      original_price ? Number(original_price) : null,
-      (badge || '').trim(),
-      image.trim(),
-      galleryJson,
-      description.trim(),
-      featuresJson,
-      Math.max(0, parseInt(stock_count, 10)),
-      is_featured ? 1 : 0,
-      productId
-    );
-
-    res.json({ success: true, message: 'Product updated successfully' });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// DELETE /api/products/:id (Admin Delete Product)
-app.delete('/api/products/:id', requireAuth, requireAdmin, (req, res) => {
-  try {
-    const productId = req.params.id;
-    const existing = db.prepare('SELECT id FROM products WHERE id = ?').get(productId);
-    if (!existing) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
-    }
-
-    db.prepare('DELETE FROM products WHERE id = ?').run(productId);
-    res.json({ success: true, message: 'Product deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
 // ==========================================
 // 2. USER AUTHENTICATION API
 // ==========================================
@@ -513,59 +306,11 @@ app.post('/api/auth/login', (req, res) => {
 // GET /api/auth/me
 app.get('/api/auth/me', requireAuth, (req, res) => {
   try {
-    const user = db.prepare('SELECT id, name, email, role, avatar, phone, created_at FROM users WHERE id = ?').get(req.user.id);
+    const user = db.prepare('SELECT id, name, email, role, avatar, created_at FROM users WHERE id = ?').get(req.user.id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
     res.json({ success: true, user });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// PUT /api/auth/profile (Update Name & Phone)
-app.put('/api/auth/profile', requireAuth, (req, res) => {
-  try {
-    const { name, phone } = req.body;
-    if (!name || !name.trim()) {
-      return res.status(400).json({ success: false, message: 'Full name cannot be empty.' });
-    }
-
-    db.prepare('UPDATE users SET name = ?, phone = ? WHERE id = ?').run(name.trim(), (phone || '').trim(), req.user.id);
-    const updated = db.prepare('SELECT id, name, email, role, avatar, phone, created_at FROM users WHERE id = ?').get(req.user.id);
-
-    res.json({
-      success: true,
-      message: 'Profile updated successfully',
-      user: updated
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// PUT /api/auth/password (Change Password)
-app.put('/api/auth/password', requireAuth, (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ success: false, message: 'Current and new password are required.' });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ success: false, message: 'New password must be at least 6 characters.' });
-    }
-
-    const user = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
-    if (!user || !bcrypt.compareSync(currentPassword, user.password_hash)) {
-      return res.status(400).json({ success: false, message: 'Current password is incorrect.' });
-    }
-
-    const salt = bcrypt.genSaltSync(10);
-    const newHash = bcrypt.hashSync(newPassword, salt);
-    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(newHash, req.user.id);
-
-    res.json({ success: true, message: 'Password updated successfully' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -748,72 +493,10 @@ app.delete('/api/cart', (req, res) => {
 });
 
 // ==========================================
-// 4. WISHLIST API
+// 4. ORDER PROCESSING & CHECKOUT API
 // ==========================================
 
-// GET /api/wishlist (User saved items)
-app.get('/api/wishlist', requireAuth, (req, res) => {
-  try {
-    const rows = db.prepare(`
-      SELECT p.*, w.created_at as wishlisted_at
-      FROM wishlist w
-      JOIN products p ON w.product_id = p.id
-      WHERE w.user_id = ?
-      ORDER BY w.created_at DESC
-    `).all(req.user.id);
-
-    const formatted = rows.map(prod => ({
-      ...prod,
-      sku: `ALP-${String(prod.id).padStart(3, '0')}`,
-      item_number: `#ALP-${String(prod.id).padStart(3, '0')}`,
-      gallery: prod.gallery_json ? JSON.parse(prod.gallery_json) : [prod.image],
-      features: prod.features_json ? JSON.parse(prod.features_json) : []
-    }));
-
-    res.json({ success: true, count: formatted.length, wishlist: formatted });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// POST /api/wishlist/:productId (Toggle save/unsave)
-app.post('/api/wishlist/:productId', requireAuth, (req, res) => {
-  try {
-    const productId = Number(req.params.productId);
-    const prod = db.prepare('SELECT id, name FROM products WHERE id = ?').get(productId);
-    if (!prod) {
-      return res.status(404).json({ success: false, message: 'Product not found.' });
-    }
-
-    const existing = db.prepare('SELECT id FROM wishlist WHERE user_id = ? AND product_id = ?').get(req.user.id, productId);
-    if (existing) {
-      db.prepare('DELETE FROM wishlist WHERE id = ?').run(existing.id);
-      return res.json({ success: true, action: 'removed', inWishlist: false, message: `Removed "${prod.name}" from wishlist.` });
-    } else {
-      db.prepare('INSERT INTO wishlist (user_id, product_id) VALUES (?, ?)').run(req.user.id, productId);
-      return res.status(201).json({ success: true, action: 'added', inWishlist: true, message: `Added "${prod.name}" to wishlist.` });
-    }
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// DELETE /api/wishlist/:productId (Explicit delete)
-app.delete('/api/wishlist/:productId', requireAuth, (req, res) => {
-  try {
-    const productId = Number(req.params.productId);
-    db.prepare('DELETE FROM wishlist WHERE user_id = ? AND product_id = ?').run(req.user.id, productId);
-    res.json({ success: true, message: 'Product removed from wishlist.' });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// ==========================================
-// 5. ORDER PROCESSING & CHECKOUT API
-// ==========================================
-
-// POST /api/orders (Process and place order atomically)
+// POST /api/orders (Process and place order)
 app.post('/api/orders', (req, res) => {
   try {
     const {
@@ -862,21 +545,13 @@ app.post('/api/orders', (req, res) => {
     let subtotal = 0;
     const finalItems = [];
 
-    // Pre-check stock for all items
     for (const item of orderItems) {
       const prod = db.prepare('SELECT id, name, price, image, stock_count FROM products WHERE id = ?').get(item.id || item.product_id);
       if (!prod) {
-        return res.status(400).json({ success: false, message: `Product with ID ${item.id || item.product_id} not found.` });
+        return res.status(400).json({ success: false, message: `Product with ID ${item.id} not found.` });
       }
 
       const qty = Math.max(1, Number(item.quantity));
-      if (prod.stock_count < qty) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient stock for "${prod.name}". Only ${prod.stock_count} unit${prod.stock_count === 1 ? '' : 's'} available.`
-        });
-      }
-
       subtotal += prod.price * qty;
 
       finalItems.push({
@@ -888,113 +563,84 @@ app.post('/api/orders', (req, res) => {
         image: prod.image,
         quantity: qty
       });
+
+      // Update inventory
+      const newStock = Math.max(0, prod.stock_count - qty);
+      db.prepare('UPDATE products SET stock_count = ? WHERE id = ?').run(newStock, prod.id);
     }
 
     subtotal = Math.round(subtotal * 100) / 100;
 
-    // Calculate promo discount from database
+    // Calculate promo discount
     let discount = 0;
     if (promoCode) {
       const code = promoCode.trim().toUpperCase();
-      const coup = db.prepare('SELECT * FROM coupons WHERE code = ? AND is_active = 1').get(code);
-      if (coup && subtotal >= (coup.min_purchase || 0)) {
-        discount = Math.round(subtotal * (coup.discount_percent / 100) * 100) / 100;
+      if (code === 'ALPHA10') {
+        discount = Math.round(subtotal * 0.10 * 100) / 100;
       } else if (code === 'ALPHA15' || code === 'CODEALPHA') {
         discount = Math.round(subtotal * 0.15 * 100) / 100;
-      } else if (code === 'ALPHA10' && subtotal >= 50) {
-        discount = Math.round(subtotal * 0.10 * 100) / 100;
-      } else if (code === 'WELCOME20' && subtotal >= 100) {
+      } else if (code === 'WELCOME20') {
         discount = Math.round(subtotal * 0.20 * 100) / 100;
       }
     }
 
     // Free shipping if subtotal >= 99, otherwise $12 flat
     const shippingFee = subtotal >= 99 ? 0 : 12.00;
-    const total = Math.max(0, Math.round((subtotal - discount + shippingFee) * 100) / 100);
-
-    // Payment status: Pending for COD, Paid for instant methods
-    const paymentStatus = paymentMethod.includes('Cash on Delivery') ? 'Pending' : 'Paid';
+    const total = Math.round((subtotal - discount + shippingFee) * 100) / 100;
 
     // Generate unique order number
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const orderNumber = `ALP-2026-${randomSuffix}`;
-
-    // Execute atomic transaction for inventory deduction and order insertion
-    db.exec('BEGIN TRANSACTION;');
-    let orderId;
-    try {
-      // Deduct stock
-      for (const item of finalItems) {
-        db.prepare('UPDATE products SET stock_count = stock_count - ? WHERE id = ?').run(item.quantity, item.id);
+    let orderNumber;
+    for (let attempts = 0; attempts < 15; attempts++) {
+      const candidate = `ALP-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      const existing = db.prepare('SELECT id FROM orders WHERE order_number = ?').get(candidate);
+      if (!existing) {
+        orderNumber = candidate;
+        break;
       }
+    }
+    if (!orderNumber) {
+      orderNumber = `ALP-2026-${Date.now().toString().slice(-4)}${Math.floor(10 + Math.random() * 90)}`;
+    }
 
-      const insertOrder = db.prepare(`
-        INSERT INTO orders (
-          order_number, user_id, customer_name, customer_email,
-          shipping_address, payment_method, payment_status, subtotal, discount,
-          shipping_fee, total, status, items_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Processing', ?)
-      `);
+    const insertOrder = db.prepare(`
+      INSERT INTO orders (
+        order_number, user_id, customer_name, customer_email,
+        shipping_address, payment_method, subtotal, discount,
+        shipping_fee, total, status, items_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Processing', ?)
+    `);
 
-      const info = insertOrder.run(
-        orderNumber,
-        userId || null,
-        customerName.trim(),
-        customerEmail.trim(),
-        shippingAddress.trim(),
-        paymentMethod.trim(),
-        paymentStatus,
-        subtotal,
-        discount,
-        shippingFee,
-        total,
-        JSON.stringify(finalItems)
-      );
+    const info = insertOrder.run(
+      orderNumber,
+      userId || null,
+      customerName.trim(),
+      customerEmail.trim(),
+      shippingAddress.trim(),
+      paymentMethod.trim(),
+      subtotal,
+      discount,
+      shippingFee,
+      total,
+      JSON.stringify(finalItems)
+    );
 
-      orderId = Number(info.lastInsertRowid);
-
-      // Insert relational order items
-      const insertOrderItem = db.prepare(`
-        INSERT INTO order_items (order_id, product_id, product_name, product_sku, product_image, unit_price, quantity, subtotal)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-      for (const item of finalItems) {
-        insertOrderItem.run(
-          orderId,
-          item.id,
-          item.name,
-          item.sku,
-          item.image,
-          item.price,
-          item.quantity,
-          Math.round(item.price * item.quantity * 100) / 100
-        );
-      }
-
-      // Clear cart
-      if (userId) {
-        db.prepare('DELETE FROM cart_items WHERE user_id = ?').run(userId);
-      } else {
-        db.prepare('DELETE FROM cart_items WHERE session_id = ?').run(sessionId);
-      }
-
-      db.exec('COMMIT;');
-    } catch (txErr) {
-      db.exec('ROLLBACK;');
-      throw txErr;
+    // Clear cart
+    if (userId) {
+      db.prepare('DELETE FROM cart_items WHERE user_id = ?').run(userId);
+    } else {
+      db.prepare('DELETE FROM cart_items WHERE session_id = ?').run(sessionId);
     }
 
     res.status(201).json({
       success: true,
       message: 'Order processed successfully!',
       order: {
-        id: orderId,
+        id: Number(info.lastInsertRowid),
         orderNumber,
         customerName: customerName.trim(),
         customerEmail: customerEmail.trim(),
         shippingAddress: shippingAddress.trim(),
         paymentMethod: paymentMethod.trim(),
-        paymentStatus,
         subtotal,
         discount,
         shippingFee,
@@ -1014,14 +660,19 @@ app.get('/api/orders', (req, res) => {
   try {
     const { userId } = getCartIdentifier(req);
     const email = req.query.email;
+    const statusFilter = req.query.status;
 
     let orders;
     if (req.user && req.user.role === 'admin') {
-      orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
+      if (statusFilter && statusFilter !== 'All') {
+        orders = db.prepare('SELECT * FROM orders WHERE status = ? ORDER BY created_at DESC').all(statusFilter);
+      } else {
+        orders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
+      }
     } else if (userId) {
       orders = db.prepare('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC').all(userId);
     } else if (email) {
-      orders = db.prepare('SELECT * FROM orders WHERE LOWER(customer_email) = LOWER(?) ORDER BY created_at DESC').all(email.trim());
+      orders = db.prepare('SELECT * FROM orders WHERE customer_email = ? ORDER BY created_at DESC').all(email.trim().toLowerCase());
     } else {
       orders = [];
     }
@@ -1037,22 +688,12 @@ app.get('/api/orders', (req, res) => {
   }
 });
 
-// GET /api/orders/:orderNumber (Look up single order by number with ownership check)
+// GET /api/orders/:orderNumber (Look up single order by number)
 app.get('/api/orders/:orderNumber', (req, res) => {
   try {
     const order = db.prepare('SELECT * FROM orders WHERE order_number = ?').get(req.params.orderNumber);
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
-    }
-
-    // Ownership check: Admin, owner user_id, or matching customer_email
-    const isAdmin = req.user && req.user.role === 'admin';
-    const isOwnerUser = req.user && order.user_id && req.user.id === order.user_id;
-    const isOwnerEmail = (req.user && req.user.email.toLowerCase() === order.customer_email.toLowerCase()) ||
-      (req.query.email && req.query.email.trim().toLowerCase() === order.customer_email.toLowerCase());
-
-    if (!isAdmin && !isOwnerUser && !isOwnerEmail) {
-      return res.status(403).json({ success: false, message: 'Access denied: You do not have permission to view this order.' });
     }
 
     res.json({
@@ -1067,23 +708,13 @@ app.get('/api/orders/:orderNumber', (req, res) => {
   }
 });
 
-// POST /api/orders/:id/cancel (Customer or admin cancel order with atomic restock)
+// POST /api/orders/:id/cancel (Customer or admin cancel order)
 app.post('/api/orders/:id/cancel', (req, res) => {
   try {
     const orderId = req.params.id;
     const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
-    }
-
-    // Ownership check
-    const isAdmin = req.user && req.user.role === 'admin';
-    const isOwnerUser = req.user && order.user_id && req.user.id === order.user_id;
-    const isOwnerEmail = (req.user && req.user.email.toLowerCase() === order.customer_email.toLowerCase()) ||
-      (req.body.email && req.body.email.trim().toLowerCase() === order.customer_email.toLowerCase());
-
-    if (!isAdmin && !isOwnerUser && !isOwnerEmail) {
-      return res.status(403).json({ success: false, message: 'Access denied: You do not have permission to cancel this order.' });
     }
 
     if (order.status === 'Cancelled') {
@@ -1094,13 +725,12 @@ app.post('/api/orders/:id/cancel', (req, res) => {
       return res.status(400).json({ success: false, message: 'Delivered orders cannot be cancelled. Please contact support for returns.' });
     }
 
-    db.exec('BEGIN TRANSACTION;');
-    try {
-      // Update status to Cancelled
-      db.prepare("UPDATE orders SET status = 'Cancelled' WHERE id = ?").run(orderId);
+    // Update status to Cancelled
+    db.prepare("UPDATE orders SET status = 'Cancelled' WHERE id = ?").run(orderId);
 
-      // Restore inventory
-      if (order.items_json) {
+    // Restore inventory
+    if (order.items_json) {
+      try {
         const items = JSON.parse(order.items_json);
         for (const item of items) {
           const prodId = item.id || item.product_id;
@@ -1109,11 +739,9 @@ app.post('/api/orders/:id/cancel', (req, res) => {
             db.prepare('UPDATE products SET stock_count = stock_count + ? WHERE id = ?').run(qty, prodId);
           }
         }
+      } catch (e) {
+        console.error('Error parsing items for restock:', e);
       }
-      db.exec('COMMIT;');
-    } catch (txErr) {
-      db.exec('ROLLBACK;');
-      throw txErr;
     }
 
     res.json({
@@ -1135,13 +763,148 @@ app.patch('/api/admin/orders/:id/status', requireAuth, (req, res) => {
     }
 
     const { status } = req.body;
-    const allowed = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+    const allowed = ['Processing', 'Shipped', 'Delivered', 'Cancelled'];
     if (!allowed.includes(status)) {
       return res.status(400).json({ success: false, message: `Invalid status. Must be one of: ${allowed.join(', ')}` });
     }
 
     db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(status, req.params.id);
     res.json({ success: true, message: `Order status updated to ${status}` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/admin/products (Add new product)
+app.post('/api/admin/products', requireAuth, (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Forbidden: Admin access required.' });
+    }
+
+    const {
+      name,
+      tagline,
+      category,
+      price,
+      original_price,
+      stock_count,
+      image,
+      gallery,
+      description,
+      features,
+      badge,
+      is_featured
+    } = req.body;
+
+    if (!name || !price || !category || !image) {
+      return res.status(400).json({ success: false, message: 'Name, price, category, and image URL are required.' });
+    }
+
+    const galleryJson = gallery ? (typeof gallery === 'string' ? gallery : JSON.stringify(gallery)) : JSON.stringify([image]);
+    const featuresJson = features ? (typeof features === 'string' ? features : JSON.stringify(features)) : JSON.stringify([
+      'Precision engineered components',
+      'Brutalist durability certification',
+      'Next-generation connectivity'
+    ]);
+
+    const stmt = db.prepare(`
+      INSERT INTO products (
+        name, tagline, category, price, original_price, stock_count,
+        rating, reviews_count, badge, image, gallery_json, description,
+        features_json, is_featured
+      ) VALUES (?, ?, ?, ?, ?, ?, 5.0, 0, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const info = stmt.run(
+      name.trim(),
+      (tagline || '').trim(),
+      category.trim(),
+      Number(price),
+      original_price ? Number(original_price) : Number(price),
+      stock_count !== undefined ? Number(stock_count) : 20,
+      badge || 'New Arrival',
+      image.trim(),
+      galleryJson,
+      (description || name).trim(),
+      featuresJson,
+      is_featured ? 1 : 0
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Product created successfully',
+      productId: Number(info.lastInsertRowid)
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// PATCH /api/admin/products/:id (Quick update stock or price)
+app.patch('/api/admin/products/:id', requireAuth, (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Forbidden: Admin access required.' });
+    }
+
+    const prodId = req.params.id;
+    const prod = db.prepare('SELECT * FROM products WHERE id = ?').get(prodId);
+    if (!prod) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
+    }
+
+    const { stock_count, price, name, is_featured } = req.body;
+    const updates = [];
+    const params = [];
+
+    if (stock_count !== undefined) {
+      updates.push('stock_count = ?');
+      params.push(Math.max(0, Number(stock_count)));
+    }
+    if (price !== undefined) {
+      updates.push('price = ?');
+      params.push(Math.max(0, Number(price)));
+    }
+    if (name !== undefined) {
+      updates.push('name = ?');
+      params.push(name.trim());
+    }
+    if (is_featured !== undefined) {
+      updates.push('is_featured = ?');
+      params.push(is_featured ? 1 : 0);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ success: false, message: 'No valid fields provided for update.' });
+    }
+
+    params.push(prodId);
+    db.prepare(`UPDATE products SET ${updates.join(', ')} WHERE id = ?`).run(...params);
+
+    res.json({ success: true, message: 'Product updated successfully.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// DELETE /api/admin/products/:id (Delete product)
+app.delete('/api/admin/products/:id', requireAuth, (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Forbidden: Admin access required.' });
+    }
+
+    const prodId = req.params.id;
+    db.prepare('DELETE FROM cart_items WHERE product_id = ?').run(prodId);
+    db.prepare('DELETE FROM reviews WHERE product_id = ?').run(prodId);
+    const info = db.prepare('DELETE FROM products WHERE id = ?').run(prodId);
+
+    if (info.changes === 0) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
+    }
+
+    res.json({ success: true, message: 'Product deleted successfully.' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -1164,179 +927,6 @@ app.get('/api/stats', (req, res) => {
         users: totalUsers
       }
     });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// ==========================================
-// 5. COUPONS API
-// ==========================================
-
-// POST /api/coupons/validate
-app.post('/api/coupons/validate', (req, res) => {
-  try {
-    const { code, subtotal = 0 } = req.body;
-    if (!code) {
-      return res.status(400).json({ success: false, message: 'Promo code required' });
-    }
-
-    const cleanCode = code.trim().toUpperCase();
-    const coupon = db.prepare('SELECT * FROM coupons WHERE code = ? AND is_active = 1').get(cleanCode);
-
-    if (!coupon) {
-      return res.status(404).json({ success: false, message: 'Invalid or expired promo code.' });
-    }
-
-    const minSpend = coupon.min_purchase || 0;
-    if (subtotal < minSpend) {
-      return res.status(400).json({
-        success: false,
-        message: `Coupon "${cleanCode}" requires a minimum purchase of $${minSpend.toFixed(2)}.`
-      });
-    }
-
-    const discountAmount = Math.round(subtotal * (coupon.discount_percent / 100) * 100) / 100;
-    res.json({
-      success: true,
-      code: coupon.code,
-      discountPercent: coupon.discount_percent,
-      discountAmount,
-      message: `Coupon applied: ${coupon.discount_percent}% off!`
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// GET /api/admin/coupons
-app.get('/api/admin/coupons', requireAuth, requireAdmin, (req, res) => {
-  try {
-    const coupons = db.prepare('SELECT * FROM coupons ORDER BY created_at DESC').all();
-    res.json({ success: true, coupons });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// POST /api/admin/coupons
-app.post('/api/admin/coupons', requireAuth, requireAdmin, (req, res) => {
-  try {
-    const { code, discount_percent, min_purchase = 0 } = req.body;
-    if (!code || !discount_percent) {
-      return res.status(400).json({ success: false, message: 'Code and discount percentage are required.' });
-    }
-
-    const cleanCode = code.trim().toUpperCase();
-    const existing = db.prepare('SELECT id FROM coupons WHERE code = ?').get(cleanCode);
-    if (existing) {
-      db.prepare('UPDATE coupons SET discount_percent = ?, min_purchase = ?, is_active = 1 WHERE id = ?')
-        .run(Number(discount_percent), Number(min_purchase), existing.id);
-      return res.status(200).json({ success: true, message: `Coupon "${cleanCode}" updated successfully.` });
-    }
-
-    db.prepare(`
-      INSERT INTO coupons (code, discount_percent, min_purchase, is_active)
-      VALUES (?, ?, ?, 1)
-    `).run(cleanCode, Number(discount_percent), Number(min_purchase));
-
-    res.status(201).json({ success: true, message: `Coupon "${cleanCode}" created successfully.` });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// DELETE /api/admin/coupons/:id
-app.delete('/api/admin/coupons/:id', requireAuth, requireAdmin, (req, res) => {
-  try {
-    db.prepare('DELETE FROM coupons WHERE id = ?').run(req.params.id);
-    res.json({ success: true, message: 'Coupon deleted successfully.' });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// ==========================================
-// 6. CONTACT & INQUIRIES API
-// ==========================================
-
-// POST /api/contact
-app.post('/api/contact', (req, res) => {
-  try {
-    const { name, email, subject, message } = req.body;
-    if (!name || !email || !subject || !message) {
-      return res.status(400).json({ success: false, message: 'All contact fields are required.' });
-    }
-
-    db.prepare(`
-      INSERT INTO contact_messages (name, email, subject, message)
-      VALUES (?, ?, ?, ?)
-    `).run(name.trim(), email.trim(), subject.trim(), message.trim());
-
-    res.status(201).json({
-      success: true,
-      message: 'Your inquiry has been logged. An engineering representative will reply within 24 hours.'
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// GET /api/admin/contacts
-app.get('/api/admin/contacts', requireAuth, requireAdmin, (req, res) => {
-  try {
-    const messages = db.prepare('SELECT * FROM contact_messages ORDER BY created_at DESC').all();
-    res.json({ success: true, messages });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// ==========================================
-// 7. COMPREHENSIVE ADMIN DASHBOARD & CUSTOMERS
-// ==========================================
-
-// GET /api/admin/dashboard
-app.get('/api/admin/dashboard', requireAuth, requireAdmin, (req, res) => {
-  try {
-    const totalProducts = db.prepare('SELECT COUNT(*) as count FROM products').get().count;
-    const totalOrders = db.prepare('SELECT COUNT(*) as count FROM orders').get().count;
-    const totalRevenue = db.prepare("SELECT SUM(total) as sum FROM orders WHERE status != 'Cancelled'").get().sum || 0;
-    const totalUsers = db.prepare("SELECT COUNT(*) as count FROM users WHERE role = 'customer'").get().count;
-
-    const recentOrders = db.prepare('SELECT id, order_number, customer_name, customer_email, total, status, payment_status, created_at FROM orders ORDER BY created_at DESC LIMIT 6').all();
-    const lowStock = db.prepare('SELECT id, name, category, price, stock_count FROM products WHERE stock_count <= 15 ORDER BY stock_count ASC LIMIT 5').all();
-
-    res.json({
-      success: true,
-      metrics: {
-        products: totalProducts,
-        orders: totalOrders,
-        revenue: Math.round(totalRevenue * 100) / 100,
-        customers: totalUsers
-      },
-      recentOrders,
-      lowStock
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// GET /api/admin/customers
-app.get('/api/admin/customers', requireAuth, requireAdmin, (req, res) => {
-  try {
-    const customers = db.prepare(`
-      SELECT u.id, u.name, u.email, u.phone, u.role, u.created_at,
-             COUNT(o.id) as total_orders,
-             COALESCE(SUM(o.total), 0) as total_spent
-      FROM users u
-      LEFT JOIN orders o ON u.id = o.user_id
-      GROUP BY u.id
-      ORDER BY u.created_at DESC
-    `).all();
-
-    res.json({ success: true, customers });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
